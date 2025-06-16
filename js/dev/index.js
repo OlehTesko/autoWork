@@ -371,6 +371,7 @@ window.addEventListener("DOMContentLoaded", () => {
   }
   const input = document.querySelector(".input");
   loadData().then((data) => {
+    window.data = JSON.stringify(data);
     let activeIndex = -1;
     let currentFiltered = [];
     function sortItems(items, searchValue, input2) {
