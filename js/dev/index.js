@@ -375,7 +375,7 @@ window.addEventListener("DOMContentLoaded", () => {
     let activeIndex = -1;
     let currentFiltered = [];
     function sortItems(items, searchValue, input2) {
-      const commands = ["open", "data"];
+      const commands = ["open", "open-e"];
       const fullList = ["data"];
       items.forEach((student) => {
         commands.forEach((cmd) => {
