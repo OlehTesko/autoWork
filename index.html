@@ -5,8 +5,8 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<link rel="shortcut icon" href="./assets/img/favicon.ico">
 		<title>Home Page</title>
-		<script type="module" crossorigin="" src="./js/index.min.js?v=1750021073707"></script>
-		<link rel="stylesheet" crossorigin="" href="./css/index.min.css?v=1750021073707">
+		<script type="module" crossorigin="" src="./js/index.min.js?v=1750094435469"></script>
+		<link rel="stylesheet" crossorigin="" href="./css/index.min.css?v=1750094435469">
 	</head>
 	<body>
 		<div class="wrapper">
@@ -17,9 +17,11 @@
 			</header>
 			<main class="page page--home">
 				<div class="page__container">
-					<input autofocus data-fls-input="" autocomplete="off" type="text" name="form[]" data-error="Помилка" placeholder="" class="input">
+					<div class="input_wrapper">
+						<input autofocus data-fls-input="" autocomplete="off" type="text" name="form[]" data-error="Помилка" placeholder="" class="input">
+						<ul id="suggestionsList"></ul>
+					</div>
 					<div class="info"></div>
-					<ul id="suggestionsList"></ul>
 				</div>
 			</main>
 			<footer data-fls-footer="" class="footer">
