@@ -411,8 +411,10 @@ window.addEventListener("DOMContentLoaded", () => {
     document.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
         stat(input.value, data);
-        input.value = "";
-        suggestionsList.innerHTML = "";
+        setTimeout(() => {
+          input.value = "";
+          suggestionsList.innerHTML = "";
+        }, 500);
       }
       if (!currentFiltered.length) return;
       if (e.key === "ArrowDown") {
