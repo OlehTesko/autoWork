@@ -399,10 +399,10 @@ window.addEventListener("DOMContentLoaded", () => {
     function sortItems(items, searchValue, input2) {
       const fullList = ["data-unik", "data-2-uniky", "data-nema-mais"];
       items.forEach((student) => {
-        fullList.push(`open ${student[0].toLowerCase()}`);
+        fullList.push(`open-${student[0].toLowerCase()}`);
       });
       stuStudents.forEach((student) => {
-        fullList.push(`open-e ${student.values[0].toLowerCase()}`);
+        fullList.push(`open-e-${student.values[0].toLowerCase()}`);
       });
       currentFiltered = fullList.filter(
         (item) => typeof item === "string" && item.toLowerCase().includes(searchValue)
