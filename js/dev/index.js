@@ -549,8 +549,18 @@ window.addEventListener("DOMContentLoaded", () => {
             });
           }
         }
+        const blacklist = [
+          normalizeName("vitalii ", "cherniuk"),
+          normalizeName("dmytro", "novikov"),
+          normalizeName("arsenii", "hubenko"),
+          normalizeName("ivan", "dinov"),
+          normalizeName("dmytro", "slupetskyi"),
+          normalizeName("Sarana", "Daria")
+        ];
         const allMaisNames = Object.keys(nameToUniversities);
-        const notSubmittedStudents = allStudents.filter((stud) => !allMaisNames.includes(stud.normalized)).map((stud) => stud.display);
+        const notSubmittedStudents = allStudents.filter(
+          (stud) => !allMaisNames.includes(stud.normalized) && !blacklist.includes(stud.normalized)
+        ).map((stud) => stud.display);
         notSubmittedStudents.forEach((name2) => {
           const studentNoneUniky = document.createElement("p");
           studentNoneUniky.classList.add("info__text");
