@@ -296,7 +296,7 @@ window.addEventListener("DOMContentLoaded", () => {
     {
       name: "MAIS",
       process: (rows) => {
-        const universityList = ["TUKE", "SPU", "STU", "UPJS", "UNIBA", "UKF", "UNIZA", "UNIPO", "TNUNI", "TUZVO", "UCM", "TRUNI", "UMB"];
+        const universityList = ["TUKE", "SPU", "STU", "UPJS", "UNIBA", "UKF", "UNIZA", "PEVS", "UNIPO", "TNUNI", "TUZVO", "UCM", "TRUNI", "UMB"];
         const mainArray = [];
         rows.forEach((row, indexR) => {
           if (!row || !row.c) return;
