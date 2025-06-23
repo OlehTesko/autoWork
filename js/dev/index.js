@@ -244,16 +244,29 @@ function spollers() {
 window.addEventListener("load", spollers);
 window.addEventListener("DOMContentLoaded", () => {
   const sheetId = "1ROazjZqlqZq4CPEY4Gb-TnH2iiN_Q9ytyw1GNl4Z214";
+  function normalizeFullName({ firstName = "", lastName = "", full = "", singleCell = false }) {
+    let parts;
+    if (singleCell) {
+      parts = full.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    } else {
+      parts = [
+        firstName.trim().toLowerCase(),
+        lastName.trim().toLowerCase()
+      ].filter(Boolean);
+    }
+    parts.sort();
+    return parts.map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ");
+  }
   const sheets = [
     {
       name: "Studenty",
       process: (rows) => rows.map((row) => {
-        const firstThreeCells = row.c.slice(0, 3);
-        return firstThreeCells.map((cell) => {
-          const v = cell == null ? void 0 : cell.v;
-          if (typeof v === "boolean") return v ? "подав" : "не подав";
-          return v;
-        });
+        var _a, _b;
+        const cells = row.c.slice(0, 3);
+        const lastName = ((_a = cells[1]) == null ? void 0 : _a.v) ?? "";
+        const firstName = ((_b = cells[2]) == null ? void 0 : _b.v) ?? "";
+        const fullName = normalizeFullName({ firstName, lastName });
+        return [fullName];
       })
     },
     {
@@ -262,34 +275,34 @@ window.addEventListener("DOMContentLoaded", () => {
         let lastNonEmptyFirstCol = "";
         return rows.slice(1).map((row) => {
           const firstFourCells = row.c.slice(0, 4).map((cell, colIndex) => {
-            const v = (cell == null ? void 0 : cell.v) ?? "";
+            let v = (cell == null ? void 0 : cell.v) ?? "";
             if (colIndex === 0) {
-              if (v === "") return lastNonEmptyFirstCol;
-              lastNonEmptyFirstCol = v;
+              if (v === "") v = lastNonEmptyFirstCol;
+              else lastNonEmptyFirstCol = v;
+              v = normalizeFullName({ full: v, singleCell: true });
             }
             return v;
           });
           return firstFourCells;
-        }).filter((row) => {
-          return row.some((value) => value !== null && value !== "");
-        });
+        }).filter((row) => row.some((value) => value !== null && value !== ""));
       }
     },
     {
       name: "Doc",
       process: (rows) => {
         return rows.slice(1).map((row) => {
+          var _a, _b, _c;
           const cells = row.c;
-          return cells.map((cell, index) => {
-            const v = (cell == null ? void 0 : cell.v) ?? "";
-            if (index < 2) {
-              return v;
-            } else {
-              return v !== "";
-            }
-          });
-        }).filter((row) => {
-          return row.some((value) => value !== null && value !== "");
+          const firstName = ((_a = cells[1]) == null ? void 0 : _a.v) ?? "";
+          const lastName = ((_b = cells[0]) == null ? void 0 : _b.v) ?? "";
+          const fullName = normalizeFullName({ firstName, lastName });
+          const rowData = [fullName];
+          for (let i = 2; i < cells.length; i++) {
+            const val = ((_c = cells[i]) == null ? void 0 : _c.v) ?? "";
+            rowData.push(val !== "");
+          }
+          rowData.pop();
+          return rowData;
         });
       }
     },
@@ -335,6 +348,12 @@ window.addEventListener("DOMContentLoaded", () => {
           );
           const slicedRows = cleanedRows.slice(2);
           slicedRows.forEach((rowData, i) => {
+            if (rowData.length > 0) {
+              rowData[0] = normalizeFullName({
+                full: rowData[0],
+                singleCell: true
+              });
+            }
             results.push({
               university: block.value,
               rowIndex: block.startRow + i + 2,
@@ -374,13 +393,16 @@ window.addEventListener("DOMContentLoaded", () => {
     window.data = JSON.stringify(data);
     let activeIndex = -1;
     let currentFiltered = [];
+    const stuStudents = data.mais.filter((item) => {
+      return item.university === "STU";
+    });
     function sortItems(items, searchValue, input2) {
-      const commands = ["open", "open-e"];
-      const fullList = ["data"];
+      const fullList = ["data-unik", "data-2-uniky", "data-nema-mais"];
       items.forEach((student) => {
-        commands.forEach((cmd) => {
-          fullList.push(`${cmd}-${student[1].toLowerCase()}-${student[2].toLowerCase()}`);
-        });
+        fullList.push(`open ${student[0].toLowerCase()}`);
+      });
+      stuStudents.forEach((student) => {
+        fullList.push(`open-e ${student.values[0].toLowerCase()}`);
       });
       currentFiltered = fullList.filter(
         (item) => typeof item === "string" && item.toLowerCase().includes(searchValue)
@@ -404,18 +426,12 @@ window.addEventListener("DOMContentLoaded", () => {
           input2.value = item;
           suggestionsList.innerHTML = "";
           stat(input2.value, data);
+          input2.value = "";
         });
         suggestionsList.appendChild(li);
       });
     }
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        stat(input.value, data);
-        setTimeout(() => {
-          input.value = "";
-          suggestionsList.innerHTML = "";
-        }, 500);
-      }
       if (!currentFiltered.length) return;
       if (e.key === "ArrowDown") {
         activeIndex = (activeIndex + 1) % currentFiltered.length;
@@ -427,12 +443,16 @@ window.addEventListener("DOMContentLoaded", () => {
         if (activeIndex >= 0 && currentFiltered[activeIndex]) {
           input.value = currentFiltered[activeIndex];
           suggestionsList.innerHTML = "";
-          e.preventDefault();
         }
+        stat(input.value, data);
+        setTimeout(() => {
+          input.value = "";
+        }, 400);
+        e.preventDefault();
       }
     });
     function stat(value, data2) {
-      if (value === "data") {
+      if (value === "data-unik" || value === "data-2-uniky" || value === "data-nema-mais") {
         const universityMap = {};
         data2.mais.forEach((item) => {
           const university = item.university;
@@ -457,21 +477,17 @@ window.addEventListener("DOMContentLoaded", () => {
           }
         });
         const finalResult = Object.values(universityMap);
-        renderInfo(finalResult);
+        renderInfo(finalResult, value);
       }
     }
     function renderInfo(datalocal, name) {
-      {
+      if (name === "data-unik") {
         const containerInfo = document.querySelector(".info");
         containerInfo.innerHTML = "";
         const title = document.createElement("h3");
         title.classList.add("info__title");
         title.textContent = "Статистика";
         containerInfo.appendChild(title);
-        const subTitle = document.createElement("h4");
-        subTitle.classList.add("info__subtitle");
-        subTitle.textContent = `Всього подано студентів: ${datalocal.reduce((acc, item) => acc + item.total, 0)}, підписаних студентів: ${data.studenty.length}`;
-        containerInfo.appendChild(subTitle);
         const items = document.createElement("div");
         items.classList.add("info__items");
         containerInfo.appendChild(items);
@@ -508,76 +524,101 @@ window.addEventListener("DOMContentLoaded", () => {
           card.appendChild(div);
           items.appendChild(card);
         });
-        const subTitle2 = document.createElement("h4");
-        subTitle2.classList.add("info__subtitle");
-        subTitle2.textContent = `Cтуденти, якіх немає в MAIS/AIS`;
-        containerInfo.appendChild(subTitle2);
-        const capitalize = (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-        const formatName = (surname, name2) => {
-          return `${capitalize(surname)} ${capitalize(name2)}`;
-        };
-        const normalizeName = (surname, name2) => {
-          return [surname, name2].map((p) => p.trim().toLowerCase()).sort().join(" ");
-        };
-        const allStudents = data.studenty.map((arr) => ({
-          normalized: normalizeName(arr[1], arr[2]),
-          display: formatName(arr[1], arr[2])
-        }));
+        spollers();
+      }
+      if (name === "data-nema-mais") {
+        const containerInfo = document.querySelector(".info");
+        containerInfo.innerHTML = "";
+        const allStudents = data.studenty.map((item) => {
+          return item[0];
+        });
         const nameToUniversities = {};
         data.mais.forEach((item) => {
-          const raw = item.values[0];
+          const name2 = item.values[0];
           const university = item.university;
-          if (!raw || !university) return;
-          const parts = raw.trim().toLowerCase().split(/\s+/);
-          if (parts.length < 2) return;
-          const normalized = normalizeName(parts[0], parts[1]);
-          const displayName = formatName(parts[0], parts[1]);
-          if (!nameToUniversities[normalized]) {
-            nameToUniversities[normalized] = {
-              display: displayName,
+          if (!name2 || !university) return;
+          if (!nameToUniversities[name2]) {
+            nameToUniversities[name2] = {
+              name: name2,
               universities: /* @__PURE__ */ new Set()
             };
           }
-          nameToUniversities[normalized].universities.add(university);
+          nameToUniversities[name2].universities.add(university);
         });
         const multipleUniStudents = [];
         for (const [_, info] of Object.entries(nameToUniversities)) {
           if (info.universities.size >= 2) {
             multipleUniStudents.push({
-              name: info.display,
+              name: info.name,
               universities: Array.from(info.universities)
             });
           }
         }
-        const blacklist = [
-          normalizeName("vitalii ", "cherniuk"),
-          normalizeName("dmytro", "novikov"),
-          normalizeName("arsenii", "hubenko"),
-          normalizeName("ivan", "dinov"),
-          normalizeName("dmytro", "slupetskyi"),
-          normalizeName("Sarana", "Daria")
+        const blacklistRaw = [
+          "Sarana Daria",
+          "Cherniuk Vitalii",
+          "Sydorenko Anastasiia",
+          "Novikov Dmytro",
+          "Hubenko Arsenii",
+          "Dinov Ivan",
+          "Slupetskyi Dmytro"
         ];
+        const blacklist = blacklistRaw.map(
+          (name2) => normalizeFullName({ full: name2, singleCell: true })
+        );
         const allMaisNames = Object.keys(nameToUniversities);
         const notSubmittedStudents = allStudents.filter(
-          (stud) => !allMaisNames.includes(stud.normalized) && !blacklist.includes(stud.normalized)
-        ).map((stud) => stud.display);
+          (stud) => !allMaisNames.includes(stud) && !blacklist.includes(stud)
+        );
+        const title = document.createElement("h3");
+        title.classList.add("info__title");
+        title.textContent = `${notSubmittedStudents.length} cтуденти, якіх немає в MAIS/AIS`;
+        containerInfo.appendChild(title);
         notSubmittedStudents.forEach((name2) => {
           const studentNoneUniky = document.createElement("p");
           studentNoneUniky.classList.add("info__text");
           studentNoneUniky.textContent = name2;
           containerInfo.appendChild(studentNoneUniky);
         });
-        const subTitle3 = document.createElement("h4");
-        subTitle3.classList.add("info__subtitle");
-        subTitle3.textContent = `Cтуденти, які подалися в 2+ університети`;
-        containerInfo.appendChild(subTitle3);
+      }
+      if (name === "data-2-uniky") {
+        const containerInfo = document.querySelector(".info");
+        containerInfo.innerHTML = "";
+        data.studenty.map((item) => {
+          return item[0];
+        });
+        const nameToUniversities = {};
+        data.mais.forEach((item) => {
+          const name2 = item.values[0];
+          const university = item.university;
+          if (!name2 || !university) return;
+          if (!nameToUniversities[name2]) {
+            nameToUniversities[name2] = {
+              name: name2,
+              universities: /* @__PURE__ */ new Set()
+            };
+          }
+          nameToUniversities[name2].universities.add(university);
+        });
+        const multipleUniStudents = [];
+        for (const [_, info] of Object.entries(nameToUniversities)) {
+          if (info.universities.size >= 2) {
+            multipleUniStudents.push({
+              name: info.name,
+              universities: Array.from(info.universities)
+            });
+          }
+        }
+        const title = document.createElement("h3");
+        title.classList.add("info__title");
+        title.textContent = `${multipleUniStudents.length} cтуденти, які подалися в 2+ університети`;
+        containerInfo.appendChild(title);
         multipleUniStudents.forEach((name2) => {
           const studentManyUniky = document.createElement("p");
           studentManyUniky.classList.add("info__text");
           studentManyUniky.textContent = `${name2.name}: ${name2.universities.join(", ")}`;
           containerInfo.appendChild(studentManyUniky);
         });
-        spollers();
       }
     }
     input.addEventListener("input", (event) => {

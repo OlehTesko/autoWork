@@ -261,3 +261,9 @@ textarea.input {
   padding: 0.625rem 0.3125rem;
   border: #ffffff 0.0625rem solid;
 }
+@media (any-hover: hover) {
+  .page__container .find-item:hover {
+    cursor: pointer;
+    text-decoration: underline;
+  }
+}
