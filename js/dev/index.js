@@ -311,29 +311,32 @@ window.addEventListener("DOMContentLoaded", () => {
       process: (rows) => {
         const universityList = ["TUKE", "SPU", "STU", "UPJS", "UNIBA", "UKF", "UNIZA", "PEVS", "UNIPO", "TNUNI", "TUZVO", "UCM", "TRUNI", "UMB"];
         const mainArray = [];
+        console.log(rows);
         rows.forEach((row, indexR) => {
           if (!row || !row.c) return;
           row.c.forEach((el, index) => {
-            const value = (el == null ? void 0 : el.v) ?? "";
+            var _a;
+            const value = ((_a = el == null ? void 0 : el.v) == null ? void 0 : _a.toString().trim()) ?? "";
             if (universityList.includes(value)) {
-              const lastBlock = mainArray.findLast((b) => b.startCol === index);
+              const lastBlock = [...mainArray].reverse().find((b) => b.startCol === index);
               if (lastBlock) {
                 lastBlock.finishRow = indexR;
               }
-              let valPredmety = 6;
-              if (value = "TUKE") {
-                valPredmety = 7;
+              let blockLenght = 6;
+              if (value === "TUKE") {
+                blockLenght = 7;
               }
               mainArray.push({
                 value,
                 startRow: indexR,
                 finishRow: rows.length,
                 startCol: index,
-                finishCol: index + valPredmety
+                finishCol: index + blockLenght
               });
             }
           });
         });
+        console.log(mainArray);
         const results = [];
         mainArray.forEach((block) => {
           const tempRows = [];
@@ -375,8 +378,7 @@ window.addEventListener("DOMContentLoaded", () => {
     return fetch(url).then((res) => res.text()).then((text) => {
       const json = JSON.parse(text.substring(47).slice(0, -2));
       const rows = json.table.rows;
-      const cols = json.table.cols;
-      const data = sheet.process(rows, cols);
+      const data = sheet.process(rows);
       return data;
     });
   }
@@ -394,6 +396,7 @@ window.addEventListener("DOMContentLoaded", () => {
   }
   const input = document.querySelector(".input");
   loadData().then((data) => {
+    console.log(data);
     window.data = JSON.stringify(data);
     let activeIndex = -1;
     let currentFiltered = [];
