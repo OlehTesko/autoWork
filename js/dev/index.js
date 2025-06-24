@@ -320,13 +320,16 @@ window.addEventListener("DOMContentLoaded", () => {
               if (lastBlock) {
                 lastBlock.finishRow = indexR;
               }
-              if (value = "TUKE") ;
+              let valPredmety = 6;
+              if (value = "TUKE") {
+                valPredmety = 7;
+              }
               mainArray.push({
                 value,
                 startRow: indexR,
                 finishRow: rows.length,
                 startCol: index,
-                finishCol: index + 7
+                finishCol: index + valPredmety
               });
             }
           });
