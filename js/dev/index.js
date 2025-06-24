@@ -320,12 +320,13 @@ window.addEventListener("DOMContentLoaded", () => {
               if (lastBlock) {
                 lastBlock.finishRow = indexR;
               }
+              if (value = "TUKE") ;
               mainArray.push({
                 value,
                 startRow: indexR,
                 finishRow: rows.length,
                 startCol: index,
-                finishCol: index + 6
+                finishCol: index + 7
               });
             }
           });
