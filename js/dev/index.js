@@ -311,7 +311,6 @@ window.addEventListener("DOMContentLoaded", () => {
       process: (rows) => {
         const universityList = ["TUKE", "SPU", "STU", "UPJS", "UNIBA", "UKF", "UNIZA", "PEVS", "UNIPO", "TNUNI", "TUZVO", "UCM", "TRUNI", "UMB"];
         const mainArray = [];
-        console.log(rows);
         rows.forEach((row, indexR) => {
           if (!row || !row.c) return;
           row.c.forEach((el, index) => {
@@ -336,7 +335,6 @@ window.addEventListener("DOMContentLoaded", () => {
             }
           });
         });
-        console.log(mainArray);
         const results = [];
         mainArray.forEach((block) => {
           const tempRows = [];
@@ -396,7 +394,6 @@ window.addEventListener("DOMContentLoaded", () => {
   }
   const input = document.querySelector(".input");
   loadData().then((data) => {
-    console.log(data);
     window.data = JSON.stringify(data);
     let activeIndex = -1;
     let currentFiltered = [];
